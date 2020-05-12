@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "A powerful Discord bot for GTA RP servers.",
   "scripts": {
-    "clean": "rimraf dist",
     "run": "ts-node -r tsconfig-paths/register index.ts",
     "start": "nodemon"
   },
