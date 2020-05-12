@@ -1,5 +1,5 @@
 import { loadingMessage } from '@utils/messages';
-import { getEmojiNumber } from '@utils/emoji';
+import { getEmojiNumber, numericEmojis } from '@utils/emoji';
 
 export default class QuestionUtils {
   static formatQuestion = (question, current, total) => {
@@ -10,7 +10,7 @@ export default class QuestionUtils {
     message += `>>> :small_orange_diamond:  **${question.question}**\n`;
 
     question.answers.forEach((answer, index) => {
-      message += `\n${getEmojiNumber(index + 1)} ` + answer.message;
+      message += `\n${numericEmojis[index + 1]} ` + answer.message;
     });
 
     message += `\n\n${loadingMessage}`;
@@ -20,7 +20,7 @@ export default class QuestionUtils {
 
   static appendReactions = async (message, question) => {
     for (var i = 0; i < question.answers.length; i++) {
-      await message.react(getEmojiNumber(i + 1));
+      await message.react(numericEmojis[i + 1]);
     }
   };
 }
