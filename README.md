@@ -12,4 +12,5 @@ Atualmente conta com a funcionalidade de whitelist automática por meio de uma a
 ## Configuração
 A configuração é toda feita pelo arquivo `src/config.ts`
 
-
+## Execução
+Na pasta do projeto, execute o comado `npm start`
