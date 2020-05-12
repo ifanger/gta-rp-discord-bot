@@ -134,7 +134,10 @@ export default class WhitelistService {
           await tempChannel.send(
             'Houve um problema durante a execução do teste, reporte aos administradores.'
           );
-          await tempChannel.send(ex);
+
+          if (ex) {
+            await tempChannel.send(ex);
+          }
 
           setTimeout(async () => {
             await tempChannel.delete();
