@@ -1,24 +1,26 @@
+import 'reflect-metadata';
 import Discord from 'discord.js';
-import config from './config';
+import config from '@src/config';
 import WhitelistService from '@service/whitelist-service';
 import { container } from '@src/inversify.config';
-import "reflect-metadata";
 
 class NiunDiscordBot {
   private client = new Discord.Client();
-  private whitelistService = container.resolve<WhitelistService>(WhitelistService);
+  private whitelistService = container.resolve<WhitelistService>(
+    WhitelistService
+  );
 
   onMessageReceived = async (message: Discord.Message) => {
     this.whitelistService.handleMessage(this.client, message);
-  }
+  };
 
   onDisconnected = async () => {
     console.log('Desconectado');
-  }
+  };
 
   onConnected = async () => {
     await this.whitelistService.init(this.client);
-  }
+  };
 
   runApp() {
     this.client.once('ready', this.onConnected);

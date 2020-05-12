@@ -1,8 +1,8 @@
-import "reflect-metadata";
-import { injectable } from "inversify";
+import 'reflect-metadata';
+import { injectable } from 'inversify';
 import low from 'lowdb';
 import FileSync from 'lowdb/adapters/FileSync';
-import { DbSchema } from "@src/model/db-schema";
+import { DbSchema } from '@model/db-schema';
 
 @injectable()
 export default class LowRepository {

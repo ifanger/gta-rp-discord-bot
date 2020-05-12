@@ -9,11 +9,11 @@ const numericEmojis = [
   '7️⃣',
   '8️⃣',
   '9️⃣',
-  '🔟'
+  '🔟',
 ];
 
 const getEmojiNumber = (emoji) => {
-  return numericEmojis.indexOf(emoji)
+  return numericEmojis.indexOf(emoji);
 };
 
 export { numericEmojis, getEmojiNumber };

@@ -1,20 +1,21 @@
 {
   "compilerOptions": {
-      "target": "es5",
-      "lib": ["es6", "dom"],
-      "types": ["reflect-metadata"],
-      "module": "commonjs",
-      "moduleResolution": "node",
-      "experimentalDecorators": true,
-      "emitDecoratorMetadata": true,
-      "esModuleInterop": true,
-      "baseUrl": "./",
-      "paths": {
-        "@src/*": [ "./src/*" ],
-        "@repository/*": [ "./src/repository/*" ],
-        "@service/*": [ "./src/service/*" ],
-        "@model/*": ["./src/model/*"]
-      },
-      "outDir": "./dist"
+    "target": "es5",
+    "lib": ["es6", "dom", "es2017"],
+    "types": ["reflect-metadata"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true,
+    "baseUrl": "./",
+    "paths": {
+      "@src/*": ["./src/*"],
+      "@repository/*": ["./src/repository/*"],
+      "@service/*": ["./src/service/*"],
+      "@model/*": ["./src/model/*"],
+      "@utils/*": ["./src/utils/*"]
+    },
+    "outDir": "./dist"
   }
 }
