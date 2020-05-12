@@ -1,0 +1,28 @@
+{
+  "name": "gta-rp-discord-bot",
+  "version": "1.0.0",
+  "description": "A powerful Discord bot for GTA RP servers.",
+  "scripts": {
+    "clean": "rimraf dist",
+    "run": "ts-node -r tsconfig-paths/register index.ts",
+    "start": "nodemon"
+  },
+  "author": "ifanger",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^12.2.0",
+    "inversify": "^5.0.1",
+    "lowdb": "^1.0.0",
+    "mysql": "^2.18.1",
+    "reflect-metadata": "^0.1.13"
+  },
+  "devDependencies": {
+    "@types/lowdb": "^1.0.9",
+    "@types/mysql": "^2.15.10",
+    "nodemon": "^2.0.3",
+    "npm": "^6.14.5",
+    "ts-node": "^8.10.1",
+    "tsconfig-paths": "^3.9.0",
+    "typescript": "^3.8.3"
+  }
+}

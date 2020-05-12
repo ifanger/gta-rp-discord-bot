@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+      "target": "es5",
+      "lib": ["es6", "dom"],
+      "types": ["reflect-metadata"],
+      "module": "commonjs",
+      "moduleResolution": "node",
+      "experimentalDecorators": true,
+      "emitDecoratorMetadata": true,
+      "esModuleInterop": true,
+      "baseUrl": "./",
+      "paths": {
+        "@src/*": [ "./src/*" ],
+        "@repository/*": [ "./src/repository/*" ],
+        "@service/*": [ "./src/service/*" ],
+        "@model/*": ["./src/model/*"]
+      },
+      "outDir": "./dist"
+  }
+}
