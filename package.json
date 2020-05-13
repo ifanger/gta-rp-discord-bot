@@ -3,7 +3,7 @@
   "version": "1.0.1",
   "description": "A powerful Discord bot for GTA RP servers.",
   "scripts": {
-    "start": "ts-node -r tsconfig-paths/register index.ts",
+    "start": "ts-node -r tsconfig-paths/register ./src/index.ts",
     "dev": "nodemon"
   },
   "author": "ifanger",
