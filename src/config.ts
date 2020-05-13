@@ -1,5 +1,3 @@
-import { ConfigSchema } from '@model/config-schema';
-
 const config = {
   bot: {
     token: '',
