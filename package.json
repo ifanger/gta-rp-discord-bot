@@ -1,10 +1,10 @@
 {
   "name": "gta-rp-discord-bot",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A powerful Discord bot for GTA RP servers.",
   "scripts": {
-    "run": "ts-node -r tsconfig-paths/register index.ts",
-    "start": "nodemon"
+    "start": "ts-node -r tsconfig-paths/register index.ts",
+    "dev": "nodemon"
   },
   "author": "ifanger",
   "license": "ISC",

@@ -11,6 +11,9 @@ import { numericEmojis, getEmojiNumber } from '@utils/emoji';
 import RpRepository from '@repository/rp-repository';
 import { loadingMessage, loadedMessage } from '@utils/messages';
 
+/**
+ * Whitelist Module
+ */
 @injectable()
 export default class WhitelistService {
   @inject(CountRepository) private _countRepository: CountRepository;
@@ -20,6 +23,9 @@ export default class WhitelistService {
 
   getCount = async () => await this._countRepository.getCount();
 
+  /**
+   * Whitelist Module initialization
+   */
   init = async (client: Client) => {
     console.log('Inicializando bot...');
     await this.resetCounter();
@@ -27,7 +33,7 @@ export default class WhitelistService {
 
     console.log('Obtendo mensagens pendentes no canal de whitelist...');
     const channel = client.channels.cache.find(
-      (ch) => ch.id === config.server.channel
+      (ch) => ch.id === config.whitelist.channel
     ) as TextChannel;
     const messages = (await channel.messages.fetch()).array();
 
@@ -40,10 +46,13 @@ export default class WhitelistService {
       console.log('Nenhuma mensagem para apagar.');
     }
 
-    await channel.send(config.server.greeting);
+    await channel.send(config.whitelist.greeting);
     console.log('Mensagem de boas-vindas enviada no canal ' + channel.name);
   };
 
+  /**
+   * Message handler for Whitelist
+   */
   handleMessage = async (client: Client, message: Message) => {
     if (message.author.id === client.user.id) {
       return;
@@ -51,101 +60,162 @@ export default class WhitelistService {
 
     const channelId = message.channel.id;
 
-    if (channelId === config.server.channel) {
-      if (message.content === config.server.command) {
-        await this._countRepository.incrementCount();
-        const currentCount = await this._countRepository.getCount();
-
-        const { author } = message;
-
-        let applicationForm = await this._formsRepository.getByDiscordId(
-          author.id
-        );
-
-        if (!applicationForm) {
-          applicationForm = this.buildDefaultForm(author.id, currentCount);
-          await this._formsRepository.create(applicationForm);
-        }
-
-        if (applicationForm.status === 1) {
-          await message.delete();
-          await author.send(
-            '*Você já realizou a whitelist em nosso servidor.*'
-          );
-          return;
-        }
-
-        const tempChannel = await this._discordService.createPrivateChannel(
-          author.id,
-          message.guild.channels,
-          message.guild.roles,
-          currentCount
-        );
-        await message.delete();
-
-        try {
-          await tempChannel.send(
-            `Iniciando procedimento de **whitelist** com <@${author.id}>.`
-          );
-
-          const rpId = await this._discordService.askForId(
-            tempChannel,
-            author.id
-          );
-
-          const userExistsInFiveM = await this._rpRepository.userExists(rpId);
-
-          if (!userExistsInFiveM) {
-            throw 'O ID informado não existe! Faça a primeira conexão e copie o ID.';
-          }
-
-          const isAlreadyWhitelisted = await this._rpRepository.isWhitelisted(
-            rpId
-          );
-
-          if (isAlreadyWhitelisted) {
-            throw 'Você já possui whitelist em nossa cidade.';
-          }
-
-          const rpName = await this._discordService.askForName(
-            tempChannel,
-            author.id
-          );
-
-          if (
-            rpName.length < 5 ||
-            !rpName.includes(' ') ||
-            rpName.length > 30
-          ) {
-            throw 'O nome do seu personagem deve ser um nome composto (ex: Lucas Silva) com tamanho entre 5 e 30 caracteres.';
-          }
-
-          applicationForm.rpId = rpId;
-          applicationForm.rpName = rpName;
-
-          applicationForm = await this.startTest(
-            message,
-            applicationForm,
-            tempChannel
-          );
-
-          await this.validateTest(applicationForm, tempChannel, message);
-        } catch (ex) {
-          await tempChannel.send(
-            'Houve um problema durante a execução do teste, reporte aos administradores.'
-          );
-
-          if (ex) {
-            await tempChannel.send(ex);
-          }
-
-          setTimeout(async () => {
-            await tempChannel.delete();
-          }, 10000);
-        }
-      } else {
-        await message.delete();
+    if (channelId === config.whitelist.channel) {
+      if (message.content === config.whitelist.command) {
+        await this.handleStartCommand(message);
+      } else if (message.content.startsWith(config.whitelist.addCommand)) {
+        await this.handleAddUserCommand(message);
+      } else if (message.content.startsWith(config.whitelist.removeCommand)) {
+        await this.handleRemoveUserCommand(message);
       }
+
+      await message.delete();
+    }
+  };
+
+  private handleAddUserCommand = async (message: Message) => {
+    const commandHelperText = `Parâmetros inválidos.\n_Digite _\`${config.whitelist.addCommand} <FIVEM_ID>\`_ para adicionar um usuário à whitelist._`;
+
+    await this.manageUserWhitelist(message, commandHelperText, true);
+  };
+
+  private handleRemoveUserCommand = async (message: Message) => {
+    const commandHelperText = `Parâmetros inválidos.\n_Digite _\`${config.whitelist.removeCommand} <FIVEM_ID>\`_ para remover um usuário whitelist._`;
+
+    await this.manageUserWhitelist(message, commandHelperText, false);
+  };
+
+  private manageUserWhitelist = async (
+    message: Message,
+    commandHelpText: string,
+    whitelisted: boolean
+  ) => {
+    let response: Message;
+
+    try {
+      const { content, author } = message;
+
+      if (!config.whitelist.managers.includes(author.id)) {
+        throw 'Comando restrito aos gerenciadores de whitelist.';
+      }
+
+      if (!content.includes(' ')) {
+        throw commandHelpText;
+      }
+
+      const rpId = content.split(' ')[1];
+
+      if (isNaN(Number(rpId))) {
+        throw 'O parâmetro FIVEM_ID deve ser um número inteiro.';
+      }
+
+      response = await message.channel.send(':clock1030: _Carregando..._');
+
+      const validUser = await this._rpRepository.userExists(rpId);
+
+      if (!validUser) {
+        throw 'Usuário não encontrado em nosso banco de dados.';
+      }
+
+      await this.setUserWhitelisted(rpId, whitelisted);
+
+      await response.edit(
+        `Usuário ${rpId} ${
+          whitelisted ? 'adicionado na' : 'removido da'
+        } whitelist com sucesso!`
+      );
+      await response.delete({ timeout: config.whitelist.responseDuration });
+    } catch (error) {
+      await response.edit(`Houve um erro: ${error}`);
+      await response.delete({ timeout: config.whitelist.responseDuration });
+    }
+  };
+
+  private handleStartCommand = async (message: Message) => {
+    await this._countRepository.incrementCount();
+    const currentCount = await this._countRepository.getCount();
+
+    const { author } = message;
+
+    let applicationForm = await this._formsRepository.getByDiscordId(author.id);
+
+    if (!applicationForm) {
+      applicationForm = this.buildDefaultForm(author.id, currentCount);
+      await this._formsRepository.create(applicationForm);
+    }
+
+    if (applicationForm.status === 1) {
+      await message.delete();
+      await author.send('*Você já realizou a whitelist em nosso servidor.*');
+      return;
+    }
+
+    const tempChannel = await this._discordService.createPrivateChannel(
+      'whitelist',
+      author.id,
+      message.guild.channels,
+      message.guild.roles,
+      currentCount,
+      config.whitelist.category
+    );
+
+    await message.delete();
+
+    try {
+      await tempChannel.send(
+        `Iniciando procedimento de **whitelist** com <@${author.id}>.`
+      );
+
+      const rpId = await this._discordService.sendNumericQuestion(
+        '*Qual o seu ID em nosso servidor?*\n\n:speech_left: _Seu ID foi exibido ao tentar conectar em nosso servidor, no FiveM._',
+        tempChannel,
+        author.id
+      );
+
+      const userExistsInFiveM = await this._rpRepository.userExists(rpId);
+
+      if (!userExistsInFiveM) {
+        throw 'O ID informado não existe! Faça a primeira conexão e copie o ID.';
+      }
+
+      const isAlreadyWhitelisted = await this._rpRepository.isWhitelisted(rpId);
+
+      if (isAlreadyWhitelisted) {
+        throw 'Você já possui whitelist em nossa cidade.';
+      }
+
+      const rpName = await this._discordService.sendStringQuestion(
+        '*Qual o seu nome (com sobrenome) na nossa cidade?*\n\n:speech_left: _Seu nome in-game._',
+        tempChannel,
+        author.id
+      );
+
+      if (rpName.length < 5 || !rpName.includes(' ') || rpName.length > 30) {
+        throw 'O nome do seu personagem deve ser um nome composto (ex: Lucas Silva) com tamanho entre 5 e 30 caracteres.';
+      }
+
+      applicationForm.rpId = rpId;
+      applicationForm.rpName = rpName;
+
+      applicationForm = await this.startTest(
+        message,
+        applicationForm,
+        tempChannel
+      );
+
+      await this.validateTest(applicationForm, tempChannel, message);
+    } catch (ex) {
+      await tempChannel.send(
+        'Houve um problema durante a execução do teste, reporte aos administradores.'
+      );
+
+      if (ex) {
+        await tempChannel.send(ex);
+      }
+
+      setTimeout(async () => {
+        await tempChannel.delete();
+      }, 10000);
     }
   };
 
@@ -162,7 +232,7 @@ export default class WhitelistService {
     );
 
     setTimeout(async () => {
-      if (score >= config.server.minScore) {
+      if (score >= config.whitelist.minScore) {
         await this.setUserWhitelisted(rpId);
         await this.setUserNickname(message, rpName, rpId);
         await this.sendWhitelistSuccessMessage(channel, score);
@@ -172,7 +242,7 @@ export default class WhitelistService {
       } else {
         await this._formsRepository.delete(form.userId);
         await channel.send(`:no_entry: *Infelizmente você não foi aprovado em nosso teste.\n
-        Você acertou ${score} de ${config.whitelist.length}*, você deveria acertar no mínimo ${config.server.minScore}.`);
+        Você acertou ${score} de ${config.whitelist.questions.length}*, você deveria acertar no mínimo ${config.whitelist.minScore}.`);
       }
 
       setTimeout(() => this.deleteTempChannel(channel), 5000);
@@ -186,12 +256,14 @@ export default class WhitelistService {
     score: number
   ) => {
     await channel.send(`:white_check_mark: *Parabéns! Você foi aprovado em nossa Whitelist.\n
-    Você acertou ${score} de ${config.whitelist.length} questões.\n
+    Você acertou ${score} de ${config.whitelist.questions.length} questões.\n
     Seu acesso ao servidor já está liberado.*`);
   };
 
-  private setUserWhitelisted = async (rpId: string) =>
-    this._rpRepository.setWhitelisted(rpId, true);
+  private setUserWhitelisted = async (
+    rpId: string,
+    whitelisted: boolean = true
+  ) => this._rpRepository.setWhitelisted(rpId, whitelisted);
 
   private setUserNickname = async (
     message: Message,
@@ -210,7 +282,7 @@ export default class WhitelistService {
     form: ApplicationForm,
     channel: TextChannel
   ) => {
-    const questionList = [...config.whitelist];
+    const questionList = [...config.whitelist.questions];
     const { author } = message;
     const applicationForm = { ...form };
 

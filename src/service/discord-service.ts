@@ -5,24 +5,22 @@ import {
   GuildChannelManager,
   RoleManager,
 } from 'discord.js';
-import config from '@src/config';
-import { inject, injectable } from 'inversify';
-import FormsRepository from '@repository/forms-repository';
+import { injectable } from 'inversify';
 
 @injectable()
 export default class DiscordService {
-  @inject(FormsRepository) private _formsRepository: FormsRepository;
-
   createPrivateChannel = async (
+    name: string,
     discordId: string,
     channelManager: GuildChannelManager,
     roleManager: RoleManager,
-    count: number
+    count: number,
+    parentCategoryId?: string
   ) => {
-    const channel = await channelManager.create(`whitelist-${count}`, {
+    const channel = await channelManager.create(`${name}-${count}`, {
       type: 'text',
       userLimit: 2,
-      parent: config.server.category,
+      parent: parentCategoryId,
     });
 
     const everyoneRole = this.getEveryoneRole(roleManager);
@@ -35,35 +33,43 @@ export default class DiscordService {
     return channel;
   };
 
-  askForId = async (channel: TextChannel, memberId: string) => {
-    const question = await channel.send(
-      '*Qual o seu ID em nosso servidor?*\n\n:speech_left: _Seu ID foi exibido ao tentar conectar em nosso servidor, no FiveM._'
-    );
+  sendNumericQuestion = async (
+    question: string,
+    channel: TextChannel,
+    memberId: string,
+    timeout: number = 60000
+  ) => {
+    const questionMessage = await channel.send(question);
+
     const response = await channel.awaitMessages(
       (message) => message.author.id === memberId && !isNaN(message.content),
-      { max: 1, errors: ['time'], time: 60000 }
+      { max: 1, errors: ['time'], time: timeout }
     );
 
     const id = response.first().content;
 
-    await question.delete();
+    await questionMessage.delete();
     await response.first().delete();
 
     return id;
   };
 
-  askForName = async (channel: TextChannel, memberId: string) => {
-    const question = await channel.send(
-      '*Qual o seu nome (com sobrenome) na nossa cidade?*\n\n:speech_left: _Seu nome in-game._'
-    );
+  sendStringQuestion = async (
+    question: string,
+    channel: TextChannel,
+    memberId: string,
+    timeout: number = 60000
+  ) => {
+    const questionMessage = await channel.send(question);
+
     const response = await channel.awaitMessages(
       (message: Message) => message.author.id === memberId,
-      { max: 1, errors: ['time'], time: 60000 }
+      { max: 1, errors: ['time'], time: timeout }
     );
 
     const name = response.first().content;
 
-    await question.delete();
+    await questionMessage.delete();
     await response.first().delete();
 
     return name;

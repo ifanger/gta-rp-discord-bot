@@ -20,8 +20,8 @@ export default class RpRepository {
   userExists(rpId: string) {
     return new Promise<boolean>((resolve, reject) => {
       this.connection.query(
-        `SELECT whitelisted FROM ${config.server.mysql.tableOptions.name} 
-      WHERE ${config.server.mysql.tableOptions.name}.${config.server.mysql.tableOptions.idField} = ?`,
+        `SELECT whitelisted FROM ${config.whitelist.mysql.table} 
+      WHERE ${config.whitelist.mysql.table}.${config.whitelist.mysql.idField} = ?`,
         [rpId],
         (error, results, fields) => {
           if (error) {
@@ -41,8 +41,8 @@ export default class RpRepository {
   isWhitelisted(rpId: string) {
     return new Promise<boolean>((resolve, reject) => {
       this.connection.query(
-        `SELECT whitelisted FROM ${config.server.mysql.tableOptions.name} 
-      WHERE ${config.server.mysql.tableOptions.name}.${config.server.mysql.tableOptions.idField} = ?`,
+        `SELECT whitelisted FROM ${config.whitelist.mysql.table} 
+      WHERE ${config.whitelist.mysql.table}.${config.whitelist.mysql.idField} = ?`,
         [rpId],
         (error, results, fields) => {
           if (error) {
@@ -63,9 +63,9 @@ export default class RpRepository {
     return new Promise<void>((resolve, reject) => {
       this.connection.query(
         {
-          sql: `UPDATE ${config.server.mysql.tableOptions.name} 
-        SET ${config.server.mysql.tableOptions.name}.${config.server.mysql.tableOptions.field} = ? 
-        WHERE ${config.server.mysql.tableOptions.name}.${config.server.mysql.tableOptions.idField} = ?`,
+          sql: `UPDATE ${config.whitelist.mysql.table} 
+        SET ${config.whitelist.mysql.table}.${config.whitelist.mysql.flagField} = ? 
+        WHERE ${config.whitelist.mysql.table}.${config.whitelist.mysql.idField} = ?`,
           timeout: 10000,
           values: [whitelisted ? 1 : 0, Number(rpId)],
         },
