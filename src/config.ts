@@ -2,6 +2,7 @@ import { ConfigSchema } from '@model/config-schema';
 
 const config = {
   bot: {
+    token: '',
   },
   server: {
     name: 'Seu RP',
