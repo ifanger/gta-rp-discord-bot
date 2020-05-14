@@ -2,6 +2,10 @@
 Esse é um bot para Discord no qual serve para auxiliar servidores de RP no GTA.
 Atualmente conta com a funcionalidade de whitelist automática por meio de uma avaliação.
 
+## Pré-requisitos
+- Node v12.16.3
+- npm
+
 ## Instalação
 1. Faça o download do projeto.
 2. Vá até a pasta do projeto e execute o comando `npm install`
