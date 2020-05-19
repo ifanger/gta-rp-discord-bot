@@ -16,6 +16,7 @@ const config = {
     managers: ['158571601816846337'],
     channel: '709067241680797707',
     category: '709064727934009355',
+    role: '707336827748614164',
     greeting: `:shark: **Whitelist**
     Seja bem-vindo ao **Seu RP**!
     Para entrar em nossa cidade, você precisa passar por nossa avaliação.
