@@ -67,9 +67,9 @@ export default class WhitelistService {
         await this.handleAddUserCommand(message);
       } else if (message.content.startsWith(config.whitelist.removeCommand)) {
         await this.handleRemoveUserCommand(message);
+      } else {
+        await message.delete();
       }
-
-      await message.delete();
     }
   };
 
@@ -128,6 +128,8 @@ export default class WhitelistService {
     } catch (error) {
       await response.edit(`Houve um erro: ${error}`);
       await response.delete({ timeout: config.whitelist.responseDuration });
+    } finally {
+      await message.delete();
     }
   };
 
@@ -235,10 +237,7 @@ export default class WhitelistService {
       if (score >= config.whitelist.minScore) {
         await this.setUserWhitelisted(rpId);
         await this.setUserNickname(message, rpName, rpId);
-
-        const role = await message.guild.roles.fetch(config.whitelist.role);
-        await message.member.roles.add(role);
-
+        await this.setUserRole(message, rpName, rpId);
         await this.sendWhitelistSuccessMessage(channel, score);
 
         form.status = 1;
@@ -251,6 +250,21 @@ export default class WhitelistService {
 
       setTimeout(() => this.deleteTempChannel(channel), 5000);
     }, 2000);
+  };
+
+  private setUserRole = async (
+    message: Message,
+    rpName: string,
+    rpId: string
+  ) => {
+    try {
+      const role = await message.guild.roles.fetch(config.whitelist.role);
+      await message.member.roles.add(role);
+    } catch {
+      console.log(
+        `Não foi possível adicionar cargo ${config.whitelist.role} ao ${rpName} | ${rpId}.`
+      );
+    }
   };
 
   private deleteTempChannel = async (channel: TextChannel) => channel.delete();
