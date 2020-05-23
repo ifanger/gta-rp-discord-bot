@@ -235,7 +235,10 @@ export default class WhitelistService {
       if (score >= config.whitelist.minScore) {
         await this.setUserWhitelisted(rpId);
         await this.setUserNickname(message, rpName, rpId);
-        await message.member.roles.add(config.whitelist.role);
+
+        const role = await message.guild.roles.fetch(config.whitelist.role);
+        await message.member.roles.add(role);
+
         await this.sendWhitelistSuccessMessage(channel, score);
 
         form.status = 1;
