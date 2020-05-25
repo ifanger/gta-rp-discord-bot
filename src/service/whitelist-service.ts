@@ -94,6 +94,7 @@ export default class WhitelistService {
 
     try {
       const { content, author } = message;
+      response = await message.channel.send(':clock1030: _Carregando..._');
 
       if (!config.whitelist.managers.includes(author.id)) {
         throw 'Comando restrito aos gerenciadores de whitelist.';
@@ -108,8 +109,6 @@ export default class WhitelistService {
       if (isNaN(Number(rpId))) {
         throw 'O parâmetro FIVEM_ID deve ser um número inteiro.';
       }
-
-      response = await message.channel.send(':clock1030: _Carregando..._');
 
       const validUser = await this._rpRepository.userExists(rpId);
 
@@ -211,7 +210,7 @@ export default class WhitelistService {
         'Houve um problema durante a execução do teste, reporte aos administradores.'
       );
 
-      if (ex) {
+      if (ex && typeof ex === 'string' && ex.length > 0) {
         await tempChannel.send(ex);
       }
 

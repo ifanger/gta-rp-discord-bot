@@ -23,14 +23,17 @@ class NiunDiscordBot {
   };
 
   runApp() {
-    this.client.once('ready', this.onConnected);
-    this.client.on('disconnect', this.onDisconnected);
-    this.client.on('message', this.onMessageReceived);
+    try {
+      this.client.once('ready', this.onConnected);
+      this.client.on('disconnect', this.onDisconnected);
+      this.client.on('message', this.onMessageReceived);
 
-    this.client.login(config.bot.token);
+      this.client.login(config.bot.token);
+    } catch (ex) {
+      console.error(ex);
+    }
   }
 }
 
 const discordBot = new NiunDiscordBot();
-
 discordBot.runApp();
